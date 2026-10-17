@@ -34,4 +34,40 @@ $('connect').onclick=async()=>{show('در حال بررسی اتصال...');try{
 $('load').onclick=async()=>{try{const d=await request('/api/classes');render(d.classes||[]);show('کلاس‌ها از سرور دریافت شدند.')}catch(e){show('دریافت کلاس‌ها ناموفق بود: '+e.message)}};
 $('add').onclick=async()=>{const name=$('className').value.trim();if(!name){show('نام کلاس را وارد کنید.');return}try{await request('/api/classes',{method:'POST',body:JSON.stringify({name,grade:$('grade').value})});$('className').value='';await $('load').onclick();show('کلاس در سرور ثبت شد.')}catch(e){show('ثبت کلاس ناموفق بود: '+e.message)}};
 function render(items){$('classes').innerHTML='';if(!items.length){$('classes').innerHTML='<div class="muted">کلاسی ثبت نشده است.</div>';return}for(const x of items){const el=document.createElement('div');el.className='item';const b=document.createElement('b');b.textContent=x.name;const small=document.createElement('div');small.className='muted';small.textContent='پایه '+x.grade+' · شناسه '+x.id;el.append(b,small);$('classes').append(el)}}
+</script></body></html>ctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مدرسان آنلاین ایران</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f2f5fb;color:#17243a}.wrap{max-width:1000px;margin:auto;padding:16px}.hero{padding:24px;border-radius:20px;background:linear-gradient(120deg,#10213d,#2864dc,#21a6b7);color:white}.hero h1{margin:0 0 8px}.hero p{margin:0;line-height:1.8}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}.card{background:white;border:1px solid #e2e8f2;border-radius:16px;padding:18px;min-width:0}.card h2{margin:0 0 14px;font-size:18px}.field{margin:10px 0}.field label{display:block;font-size:13px;margin-bottom:6px;color:#58677f}.field input,.field select{width:100%;padding:12px;border:1px solid #d8e0ed;border-radius:10px;font:inherit;background:#fff}button{border:0;border-radius:10px;padding:11px 15px;background:#2864dc;color:#fff;font:inherit;cursor:pointer;font-weight:bold}.secondary{background:#eaf0ff;color:#214fb0}.row{display:flex;gap:8px;flex-wrap:wrap}.status{margin-top:12px;padding:10px 12px;background:#eef5ff;border-radius:10px;line-height:1.8;font-size:13px}.list{display:grid;gap:8px}.item{border:1px solid #e4eaf3;border-radius:10px;padding:10px 12px}.muted{color:#6c7890;font-size:13px;line-height:1.8}.hidden{display:none}.full{grid-column:1/-1}@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.hero{padding:18px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="hero"><h1>🎓 مدرسان آنلاین ایران</h1><p>سامانه آموزشی برای مدیریت کلاس‌ها و اطلاعات آموزشی</p></header>
+<div class="grid">
+<section class="card"><h2>اتصال به سرور</h2>
+<div class="field"><label for="api">نشانی سرور API</label><input id="api" value="http://localhost:3000" placeholder="مثلاً https://your-server.example.com"></div>
+<div class="row"><button id="connect">بررسی اتصال</button><button id="load" class="secondary">بارگذاری کلاس‌ها</button></div>
+<div id="status" class="status">برای استفاده آنلاین، نشانی سرور را وارد کنید. اگر سایت و سرور روی اینترنت هستند، از نشانی HTTPS سرور استفاده کنید.</div>
+<p class="muted">این فایل برای مخزن سایت است. اطلاعات مشترک بین گوشی‌ها فقط وقتی کار می‌کند که سرور را جداگانه اجرا و منتشر کنید.</p></section>
+<section class="card"><h2>افزودن کلاس</h2>
+<div class="field"><label for="className">نام کلاس</label><input id="className" placeholder="مثلاً هفتم الف"></div>
+<div class="field"><label for="grade">پایه تحصیلی</label><select id="grade"><option>هفتم</option><option>هشتم</option><option>نهم</option><option>دهم</option><option>یازدهم</option><option>دوازدهم</option></select></div>
+<button id="add">ثبت کلاس در سرور</button>
+<p class="muted">این نمونه برای آزمایش API است؛ ورود کاربران و مجوزهای امن هنوز باید پیش از استفاده واقعی اضافه شوند.</p></section>
+<section class="card full"><h2>کلاس‌های ثبت‌شده</h2><div id="classes" class="list"><div class="muted">هنوز اطلاعاتی بارگذاری نشده است.</div></div></section>
+</div>
+<p class="muted" style="text-align:center">نسخه آزمایشی اتصال کلاینت و سرور · مدرسان آنلاین ایران</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function apiBase(){return $('api').value.trim().replace(/\/+$/,'')}
+function show(s){$('status').textContent=s}
+async function request(path,opts={}){const res=await fetch(apiBase()+path,{...opts,headers:{'Content-Type':'application/json',...(opts.headers||{})}});let data={};try{data=await res.json()}catch{}if(!res.ok)throw new Error(data.error||('خطای سرور: '+res.status));return data}
+$('connect').onclick=async()=>{show('در حال بررسی اتصال...');try{const d=await request('/api/health');show('اتصال برقرار است. وضعیت: '+d.status)}catch(e){show('اتصال برقرار نشد: '+e.message+' — مطمئن شوید سرور روشن است و نشانی درست وارد شده.')}};
+$('load').onclick=async()=>{try{const d=await request('/api/classes');render(d.classes||[]);show('کلاس‌ها از سرور دریافت شدند.')}catch(e){show('دریافت کلاس‌ها ناموفق بود: '+e.message)}};
+$('add').onclick=async()=>{const name=$('className').value.trim();if(!name){show('نام کلاس را وارد کنید.');return}try{await request('/api/classes',{method:'POST',body:JSON.stringify({name,grade:$('grade').value})});$('className').value='';await $('load').onclick();show('کلاس در سرور ثبت شد.')}catch(e){show('ثبت کلاس ناموفق بود: '+e.message)}};
+function render(items){$('classes').innerHTML='';if(!items.length){$('classes').innerHTML='<div class="muted">کلاسی ثبت نشده است.</div>';return}for(const x of items){const el=document.createElement('div');el.className='item';const b=document.createElement('b');b.textContent=x.name;const small=document.createElement('div');small.className='muted';small.textContent='پایه '+x.grade+' · شناسه '+x.id;el.append(b,small);$('classes').append(el)}}
 </script></body></html>
